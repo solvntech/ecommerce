@@ -7,11 +7,11 @@ services:
         env_file:
             - .env
         ports:
-            - '${MONGO_PORT}:${MONGO_PORT}'
+            - '${DEV_MONGO_PORT}:${DEV_MONGO_PORT}'
         environment:
-            MONGO_INITDB_ROOT_USERNAME: $MONGO_USERNAME
-            MONGO_INITDB_ROOT_PASSWORD: $MONGO_PASSWORD
+            MONGO_INITDB_ROOT_USERNAME: $DEV_MONGO_USERNAME
+            MONGO_INITDB_ROOT_PASSWORD: $DEV_MONGO_PASSWORD
         volumes:
-            - data:/data
+            - mongodb-data:/data/db
 volumes:
-    data: {}
+    mongodb-data:

@@ -21,6 +21,7 @@
             "@types": ["./src/types/index.ts"],
             "@config/*": ["./src/config/*"],
             "@helpers/*": ["./src/helpers/*"],
+            "@services/*": ["./src/services/*"],
         }
     }
 }

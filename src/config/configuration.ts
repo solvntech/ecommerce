@@ -1,11 +1,16 @@
 import { TConfig } from '@types';
 
+export enum ENV_MODE {
+    DEV = 'DEV',
+    PRO = 'PRO',
+}
+
 export class Configuration {
     private static _config: TConfig;
 
     static init(): TConfig {
         if (!Configuration._config) {
-            const envMode: string = process.env.NODE_ENV || 'DEV';
+            const envMode: string = process.env.NODE_ENV || ENV_MODE.DEV;
             Configuration._config = {
                 env: envMode,
                 port: parseInt(process.env[`${envMode}_API_PORT`], 10),

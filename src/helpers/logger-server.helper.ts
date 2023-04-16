@@ -1,4 +1,3 @@
-import { Injectable, Scope } from '@nestjs/common';
 import * as winston from 'winston';
 import * as path from 'path';
 import * as morgan from 'morgan';
@@ -47,26 +46,23 @@ const format = winston.format.combine(
     someColoredFormat
 );
 
-@Injectable({
-    scope: Scope.DEFAULT,
-})
-export class LoggerServerService {
+export class LoggerServerHelper {
     private static logger: winston.Logger;
     private static morgan: Handler;
 
     static init() {
         // init morgan
-        if (!LoggerServerService.morgan) {
-            LoggerServerService.morgan = morgan(':method :url :status :res[content-length] - :response-time ms', {
+        if (!LoggerServerHelper.morgan) {
+            LoggerServerHelper.morgan = morgan(':method :url :status :res[content-length] - :response-time ms', {
                 stream: {
-                    write: (message) => LoggerServerService.logger.http(message.trim()),
+                    write: (message) => LoggerServerHelper.logger.http(message.trim()),
                 },
             });
         }
 
         // init winston logger
-        if (!LoggerServerService.logger) {
-            LoggerServerService.logger = winston.createLogger({
+        if (!LoggerServerHelper.logger) {
+            LoggerServerHelper.logger = winston.createLogger({
                 level: 'http',
                 transports: [
                     new winston.transports.Console({
@@ -84,22 +80,22 @@ export class LoggerServerService {
     }
 
     static log(msg: any) {
-        LoggerServerService.logger.info(msg);
+        LoggerServerHelper.logger.info(msg);
     }
 
     static error(msg: any) {
-        LoggerServerService.logger?.error(msg);
+        LoggerServerHelper.logger?.error(msg);
     }
 
     static warn(msg: any) {
-        LoggerServerService.logger.warn(msg);
+        LoggerServerHelper.logger.warn(msg);
     }
 
     static get instance() {
-        return LoggerServerService.logger;
+        return LoggerServerHelper.logger;
     }
 
     static get morganMiddleware() {
-        return LoggerServerService.morgan;
+        return LoggerServerHelper.morgan;
     }
 }
