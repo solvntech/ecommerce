@@ -15,8 +15,8 @@ export class Configuration {
                     databaseName: process.env.MONGO_BD_NAME,
                 },
             };
-            return Configuration._config;
         }
+        return Configuration._config;
     }
 
     static get instance(): TConfig {
