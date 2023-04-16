@@ -1,4 +1,5 @@
 export type TConfig = {
+    env: string;
     port: number;
     mongo: {
         port: number;

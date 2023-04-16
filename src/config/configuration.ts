@@ -5,14 +5,16 @@ export class Configuration {
 
     static init(): TConfig {
         if (!Configuration._config) {
+            const envMode: string = process.env.NODE_ENV || 'DEV';
             Configuration._config = {
-                port: parseInt(process.env.API_PORT, 10),
+                env: envMode,
+                port: parseInt(process.env[`${envMode}_API_PORT`], 10),
                 mongo: {
-                    host: process.env.MONGO_HOST,
-                    port: parseInt(process.env.MONGO_PORT, 10),
-                    username: process.env.MONGO_USERNAME,
-                    password: process.env.MONGO_PASSWORD,
-                    databaseName: process.env.MONGO_BD_NAME,
+                    host: process.env[`${envMode}_MONGO_HOST`],
+                    port: parseInt(process.env[`${envMode}_MONGO_PORT`], 10),
+                    username: process.env[`${envMode}_MONGO_USERNAME`],
+                    password: process.env[`${envMode}_MONGO_PASSWORD`],
+                    databaseName: process.env[`${envMode}_MONGO_BD_NAME`],
                 },
             };
         }

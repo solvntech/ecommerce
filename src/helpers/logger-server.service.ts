@@ -3,6 +3,7 @@ import * as winston from 'winston';
 import * as path from 'path';
 import * as morgan from 'morgan';
 import { Handler } from 'express';
+import { Configuration } from '@config/configuration';
 
 const levels = {
     error: 0,
@@ -30,7 +31,8 @@ const colorizes = winston.format.colorize({
 
 // log format string
 const someColoredFormat = winston.format.printf(({ level, timestamp, message, method }) => {
-    return `${timestamp} ${level}: ${method ? colorizes.colorize(level, method) : ''} ${message}`;
+    const envMode: string = Configuration.instance.env;
+    return `[${envMode}] ${timestamp} ${level}: ${method ? colorizes.colorize(level, method) : ''} ${message}`;
 });
 
 const format = winston.format.combine(
