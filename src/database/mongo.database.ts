@@ -1,11 +1,11 @@
+import mongoose from 'mongoose';
 import { Configuration, ENV_MODE } from '@config/configuration';
-import * as mongoose from 'mongoose';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
 
-export class DatabaseConfig {
+export class MongoDatabase {
     private static _instance: typeof mongoose;
     static async init(): Promise<typeof mongoose> {
-        if (!DatabaseConfig._instance) {
+        if (!MongoDatabase._instance) {
             if (Configuration.instance.env === ENV_MODE.DEV) {
                 mongoose.set('debug', true);
                 mongoose.set('debug', { color: true });
@@ -15,7 +15,7 @@ export class DatabaseConfig {
             const urlConnection = `mongodb://${mongoEnv.host}:${mongoEnv.port}/${mongoEnv.databaseName}`;
 
             try {
-                DatabaseConfig._instance = await mongoose.connect(urlConnection, {
+                MongoDatabase._instance = await mongoose.connect(urlConnection, {
                     maxPoolSize: 100,
                     authSource: 'admin',
                     user: mongoEnv.username,
@@ -26,10 +26,10 @@ export class DatabaseConfig {
                 LoggerServerHelper.error(`Connect mongoDB failed: ${e}`);
             }
         }
-        return DatabaseConfig._instance;
+        return MongoDatabase._instance;
     }
 
     static get instance() {
-        return DatabaseConfig._instance;
+        return MongoDatabase._instance;
     }
 }

@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Configuration } from '@config/configuration';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
-import { DatabaseConfig } from '@config/database.config';
+import { MongoDatabase } from '@database/mongo.database';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -17,7 +17,7 @@ async function bootstrap() {
     await app.use(LoggerServerHelper.morganMiddleware);
 
     // connect mongoose
-    await DatabaseConfig.init();
+    await MongoDatabase.init();
 
     return app.listen(Configuration.instance.port);
 }
