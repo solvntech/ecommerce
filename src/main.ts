@@ -2,13 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Configuration } from '@config/configuration';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
-import { MongoDatabase } from '@database/mongo.database';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
-
-    // load .env
-    Configuration.init();
+    const app = await NestFactory.create(AppModule, { cors: true, rawBody: true });
 
     // init logger
     LoggerServerHelper.init();
@@ -16,8 +13,8 @@ async function bootstrap() {
     // apply http logger
     await app.use(LoggerServerHelper.morganMiddleware);
 
-    // connect mongoose
-    await MongoDatabase.init();
+    // validate input before jump into controller
+    app.useGlobalPipes(new ValidationPipe());
 
     return app.listen(Configuration.instance.port);
 }

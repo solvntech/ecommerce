@@ -1,35 +1,23 @@
-import mongoose from 'mongoose';
 import { Configuration, ENV_MODE } from '@config/configuration';
-import { LoggerServerHelper } from '@helpers/logger-server.helper';
+import { Injectable } from '@nestjs/common';
+import { MongooseModuleOptions, MongooseOptionsFactory } from '@nestjs/mongoose';
+import * as mongoose from 'mongoose';
 
-export class MongoDatabase {
-    private static _instance: typeof mongoose;
-    static async init(): Promise<typeof mongoose> {
-        if (!MongoDatabase._instance) {
-            if (Configuration.instance.env === ENV_MODE.DEV) {
-                mongoose.set('debug', true);
-                mongoose.set('debug', { color: true });
-            }
-
-            const mongoEnv = Configuration.instance.mongo;
-            const urlConnection = `mongodb://${mongoEnv.host}:${mongoEnv.port}/${mongoEnv.databaseName}`;
-
-            try {
-                MongoDatabase._instance = await mongoose.connect(urlConnection, {
-                    maxPoolSize: 100,
-                    authSource: 'admin',
-                    user: mongoEnv.username,
-                    pass: mongoEnv.password,
-                });
-                LoggerServerHelper.log('Connect mongoDB successfully');
-            } catch (e) {
-                LoggerServerHelper.error(`Connect mongoDB failed: ${e}`);
-            }
+@Injectable()
+export class MongoDatabase implements MongooseOptionsFactory {
+    createMongooseOptions(): MongooseModuleOptions {
+        const mongoEnv = Configuration.instance.mongo;
+        const urlConnection = `mongodb://${mongoEnv.host}:${mongoEnv.port}/${mongoEnv.databaseName}`;
+        if (Configuration.instance.env === ENV_MODE.DEV) {
+            mongoose.set('debug', true);
+            mongoose.set('debug', { color: true });
         }
-        return MongoDatabase._instance;
-    }
-
-    static get instance() {
-        return MongoDatabase._instance;
+        return {
+            uri: urlConnection,
+            maxPoolSize: 100,
+            authSource: 'admin',
+            user: mongoEnv.username,
+            pass: mongoEnv.password,
+        };
     }
 }

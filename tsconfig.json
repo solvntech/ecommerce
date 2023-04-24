@@ -23,7 +23,8 @@
             "@helpers/*": ["./src/helpers/*"],
             "@database/*": ["./src/database/*"],
             "@modules/*": ["./src/modules/*"],
-            "@models/*": ["./src/models/*"],
+            "@schemas/*": ["./src/database/schemas/*"],
+            "@dto/*": ["./src/dto/*"],
         }
     }
 }
