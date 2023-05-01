@@ -10,6 +10,7 @@ async function bootstrap() {
     // init logger
     LoggerServerHelper.init();
     await app.useLogger(LoggerServerHelper.instance);
+
     // apply http logger
     await app.use(LoggerServerHelper.morganMiddleware);
 

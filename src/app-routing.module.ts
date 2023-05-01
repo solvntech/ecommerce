@@ -1,15 +1,20 @@
 import { Module } from '@nestjs/common';
 import { RouterModule, Routes } from '@nestjs/core';
-import { ShopModule } from '@modules/shop/shop.module';
+import { ShopAccountModule } from '@modules/shop-account/shop-account.module';
 
 const routes: Routes = [
     {
-        path: 'v1/api',
-        children: [{ path: 'shop', module: ShopModule }],
+        path: 'v1',
+        children: [
+            {
+                path: 'auth',
+                children: [{ path: 'shop', module: ShopAccountModule }],
+            },
+        ],
     },
 ];
 
 @Module({
-    imports: [ShopModule, RouterModule.register(routes)],
+    imports: [ShopAccountModule, RouterModule.register(routes)],
 })
 export class AppRoutingModule {}

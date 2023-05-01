@@ -25,6 +25,7 @@
             "@modules/*": ["./src/modules/*"],
             "@schemas/*": ["./src/database/schemas/*"],
             "@dto/*": ["./src/dto/*"],
+            "@constants": ["./src/constants"],
         }
     }
 }

@@ -12,6 +12,6 @@ services:
             MONGO_INITDB_ROOT_USERNAME: $DEV_MONGO_USERNAME
             MONGO_INITDB_ROOT_PASSWORD: $DEV_MONGO_PASSWORD
         volumes:
-            - mongodb-data:/data/db
+            - mongodb-data-dto:/data-dto/db
 volumes:
     mongodb-data:
