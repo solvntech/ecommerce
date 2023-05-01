@@ -3,8 +3,12 @@ import { ShopAccountService } from './shop-account.service';
 import { ShopAccountController } from './shop-account.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ShopAccount, ShopAccountSchema } from '@schemas/shop-account.schema';
+import { PassportModule } from '@nestjs/passport';
+import { ShopAuthStrategy } from '@modules/shop-account/strategies/shop-auth.strategy';
 
 @Module({
+    providers: [ShopAccountService, ShopAuthStrategy],
+    controllers: [ShopAccountController],
     imports: [
         MongooseModule.forFeature([
             {
@@ -12,8 +16,7 @@ import { ShopAccount, ShopAccountSchema } from '@schemas/shop-account.schema';
                 schema: ShopAccountSchema,
             },
         ]),
+        PassportModule,
     ],
-    providers: [ShopAccountService],
-    controllers: [ShopAccountController],
 })
 export class ShopAccountModule {}
