@@ -13,6 +13,7 @@ export class Configuration {
             const envMode: string = process.env.NODE_ENV || ENV_MODE.DEV;
             Configuration._config = {
                 env: envMode,
+                secret: process.env[`${envMode}_SECRET_KEY`],
                 port: parseInt(process.env[`${envMode}_API_PORT`], 10),
                 mongo: {
                     host: process.env[`${envMode}_MONGO_HOST`],

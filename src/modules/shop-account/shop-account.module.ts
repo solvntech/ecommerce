@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ShopAccount, ShopAccountSchema } from '@schemas/shop-account.schema';
 import { PassportModule } from '@nestjs/passport';
 import { ShopAuthStrategy } from '@modules/shop-account/strategies/shop-auth.strategy';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
     providers: [ShopAccountService, ShopAuthStrategy],
@@ -17,6 +19,16 @@ import { ShopAuthStrategy } from '@modules/shop-account/strategies/shop-auth.str
             },
         ]),
         PassportModule,
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => {
+                return {
+                    secret: configService.get('secret'),
+                    signOptions: { expiresIn: '3h' },
+                };
+            },
+            inject: [ConfigService],
+        }),
     ],
 })
 export class ShopAccountModule {}

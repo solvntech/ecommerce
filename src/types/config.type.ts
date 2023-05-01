@@ -1,5 +1,6 @@
 export type TConfig = {
     env: string;
+    secret: string;
     port: number;
     mongo: {
         port: number;

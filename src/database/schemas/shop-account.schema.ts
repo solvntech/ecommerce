@@ -1,8 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { EAccountStatus } from '@constants';
 import mongoose from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 const COLLECTION_NAME = 'shop_accounts';
+
+export type ShopAccountDocument = HydratedDocument<ShopAccount>;
 
 @Schema({ collection: COLLECTION_NAME, timestamps: true, _id: true })
 export class ShopAccount {

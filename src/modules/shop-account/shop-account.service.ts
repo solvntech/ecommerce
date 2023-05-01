@@ -5,13 +5,17 @@ import { Model } from 'mongoose';
 import { BcryptHelper } from '@helpers/bcrypt.helper';
 import { plainToClass } from 'class-transformer';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
-import { ShopAccount } from '@schemas/shop-account.schema';
+import { ShopAccount, ShopAccountDocument } from '@schemas/shop-account.schema';
 import { ErrorDto, SuccessDto, TError } from '@dto/core';
 import { ShopAccountDto } from '@dto/shop-account.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class ShopAccountService {
-    constructor(@InjectModel(ShopAccount.name) private _ShopAccountModel: Model<ShopAccount>) {}
+    constructor(
+        @InjectModel(ShopAccount.name) private _ShopAccountModel: Model<ShopAccount>,
+        private _JwtService: JwtService
+    ) {}
 
     async createShopAccount(account: AccountDto): Promise<SuccessDto | TError> {
         try {
@@ -20,11 +24,11 @@ export class ShopAccountService {
                 return new ErrorDto('Duplicate shop-account', HttpStatus.CONFLICT).error;
             }
             account.password = await BcryptHelper.hashPassword(account.password);
-            const newShop = await this._ShopAccountModel.create(account);
+            const newShop: ShopAccountDocument = await this._ShopAccountModel.create(account);
             return new SuccessDto(
                 'Create shop-account successfully',
                 HttpStatus.CREATED,
-                plainToClass(ShopAccountDto, newShop)
+                this.generationAuthResponse(newShop)
             );
         } catch (e) {
             LoggerServerHelper.error(e.toString());
@@ -47,19 +51,11 @@ export class ShopAccountService {
 
     async validateShop(email: string, password: string): Promise<SuccessDto | TError> {
         try {
-            const currentShop = await this._ShopAccountModel.findOne({ email: email });
+            const currentShop: ShopAccountDocument = await this._ShopAccountModel.findOne({ email: email });
 
             if (currentShop) {
                 if (await BcryptHelper.validatePassword(password, currentShop.password)) {
-                    const payload = {
-                        id: currentShop._id,
-                        role: currentShop.roles,
-                        email: currentShop.email,
-                    };
-                    return new SuccessDto('Login successfully', HttpStatus.OK, {
-                        ...payload,
-                        // accessToken: this._JwtService.sign(payload),
-                    });
+                    return this.generationAuthResponse(currentShop);
                 }
                 return new ErrorDto('Email or password is incorrect', HttpStatus.BAD_REQUEST).error;
             }
@@ -68,5 +64,17 @@ export class ShopAccountService {
             LoggerServerHelper.error(e.toString());
             return new ErrorDto('Login failed', HttpStatus.BAD_REQUEST).error;
         }
+    }
+
+    private generationAuthResponse(account: ShopAccountDocument): SuccessDto {
+        const payload = {
+            id: account._id,
+            role: account.roles,
+            email: account.email,
+        };
+        return new SuccessDto('Login successfully', HttpStatus.OK, {
+            ...payload,
+            accessToken: this._JwtService.sign(payload),
+        });
     }
 }
