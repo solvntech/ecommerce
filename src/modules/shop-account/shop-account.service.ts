@@ -21,7 +21,11 @@ export class ShopAccountService {
             }
             account.password = await BcryptHelper.hashPassword(account.password);
             const newShop = await this._ShopAccountModel.create(account);
-            // return new SuccessDto('Create shop-account successfully', HttpStatus.CREATED, new ShopAccount(newShop));
+            return new SuccessDto(
+                'Create shop-account successfully',
+                HttpStatus.CREATED,
+                plainToClass(ShopAccountDto, newShop)
+            );
         } catch (e) {
             LoggerServerHelper.error(e.toString());
             return new ErrorDto('Create shop-account failed', HttpStatus.BAD_REQUEST).error;
@@ -31,7 +35,6 @@ export class ShopAccountService {
     async findAllAccount(): Promise<SuccessDto | TError> {
         try {
             const shops = await this._ShopAccountModel.find().lean();
-            console.log(plainToClass(ShopAccountDto, shops));
             return new SuccessDto(
                 'Find all shops successfully',
                 HttpStatus.CREATED,
