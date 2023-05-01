@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
-import { AccountDto } from '@dto/core';
+import { AccountDto } from '@dto/account.dto';
 import { ShopAccountService } from '@modules/shop-account/shop-account.service';
 import { ShopAuthGuard } from '@modules/shop-account/guards/shop-auth.guard';
 

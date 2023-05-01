@@ -9,4 +9,7 @@ export class ShopAccountDto extends DefaultDataDto {
 
     @Expose()
     status: EAccountStatus;
+
+    @Expose()
+    roles: string[];
 }

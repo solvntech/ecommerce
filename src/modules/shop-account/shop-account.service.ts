@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { AccountDto } from '@dto/core/account.dto';
+import { AccountDto } from '@dto/account.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BcryptHelper } from '@helpers/bcrypt.helper';
@@ -51,7 +51,7 @@ export class ShopAccountService {
 
     async validateShop(email: string, password: string): Promise<SuccessDto | TError> {
         try {
-            const currentShop: ShopAccountDocument = await this._ShopAccountModel.findOne({ email: email });
+            const currentShop: ShopAccountDocument = await this._ShopAccountModel.findOne({ email: email }).lean();
 
             if (currentShop) {
                 if (await BcryptHelper.validatePassword(password, currentShop.password)) {

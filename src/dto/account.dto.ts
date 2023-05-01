@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsStrongPassword } from 'class-validator';
+import { IsArray, IsEmail, IsNotEmpty, IsStrongPassword } from 'class-validator';
 
 @Exclude()
 export class AccountDto {
@@ -14,4 +14,8 @@ export class AccountDto {
     @Expose()
     @IsStrongPassword({ minLength: 8 })
     password: string;
+
+    @Expose()
+    @IsArray()
+    roles: string[];
 }
