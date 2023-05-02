@@ -1,27 +1,24 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { AccountDto } from '@dto/account.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { BcryptHelper } from '@helpers/bcrypt.helper';
-import { plainToClass } from 'class-transformer';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
-import { Account, AccountDocument } from '@schemas/account.schema';
+import { UserDocument } from '@schemas/user.schema';
 import { ErrorDto, SuccessDto, TError } from '@dto/core';
-import { AccountResponseDto } from '@dto/account-response.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from '@modules/user/user.service';
 
 @Injectable()
-export class AccountService {
-    constructor(@InjectModel(Account.name) private _AccountModel: Model<Account>, private _JwtService: JwtService) {}
+export class AuthService {
+    constructor(private _JwtService: JwtService, private _UserService: UserService) {}
 
     async createAccount(account: AccountDto): Promise<SuccessDto | TError> {
         try {
-            const existAccount = await this._AccountModel.findOne({ email: account.email });
+            const existAccount: UserDocument = await this._UserService.findUserByEmail(account.email);
             if (existAccount) {
                 return new ErrorDto('Duplicate account', HttpStatus.CONFLICT).error;
             }
             account.password = await BcryptHelper.hashPassword(account.password);
-            const newShop: AccountDocument = await this._AccountModel.create(account);
+            const newShop: UserDocument = await this._UserService.create(account);
             return new SuccessDto(
                 'Create account successfully',
                 HttpStatus.CREATED,
@@ -33,22 +30,9 @@ export class AccountService {
         }
     }
 
-    async findAllAccount(): Promise<SuccessDto | TError> {
-        try {
-            const account: AccountDocument = await this._AccountModel.find().lean();
-            return new SuccessDto(
-                'Find all accounts successfully',
-                HttpStatus.CREATED,
-                plainToClass(AccountResponseDto, account)
-            );
-        } catch (e) {
-            return new ErrorDto(e, HttpStatus.BAD_REQUEST).error;
-        }
-    }
-
     async validateShop(email: string, password: string): Promise<SuccessDto | TError> {
         try {
-            const currentAccount: AccountDocument = await this._AccountModel.findOne({ email: email }).lean();
+            const currentAccount: UserDocument = await this._UserService.findUserByEmail(email);
 
             if (currentAccount) {
                 if (await BcryptHelper.validatePassword(password, currentAccount.password)) {
@@ -63,7 +47,7 @@ export class AccountService {
         }
     }
 
-    private generationAuthResponse(account: AccountDocument): SuccessDto {
+    private generationAuthResponse(account: UserDocument): SuccessDto {
         const payload = {
             id: account._id,
             role: account.roles,

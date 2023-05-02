@@ -1,24 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AccountService } from './account.service';
-import { AccountController } from './account.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Account, AccountSchema } from '@schemas/account.schema';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
-import { LocalAuthStrategy } from '@modules/account/strategies/local-auth.strategy';
+import { LocalAuthStrategy } from '@modules/auth/strategies/local-auth.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UserModule } from '@modules/user/user.module';
 
 @Module({
-    providers: [AccountService, LocalAuthStrategy],
-    controllers: [AccountController],
+    providers: [AuthService, LocalAuthStrategy],
+    controllers: [AuthController],
     imports: [
-        MongooseModule.forFeature([
-            {
-                name: Account.name,
-                schema: AccountSchema,
-            },
-        ]),
         PassportModule,
+        UserModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => {
@@ -31,4 +25,4 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         }),
     ],
 })
-export class AccountModule {}
+export class AuthModule {}

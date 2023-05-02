@@ -3,7 +3,7 @@ import { DefaultDataDto } from '@dto/core';
 import { EAccountStatus } from '@constants';
 
 @Exclude()
-export class AccountResponseDto extends DefaultDataDto {
+export class UserDto extends DefaultDataDto {
     @Expose()
     email: string;
 

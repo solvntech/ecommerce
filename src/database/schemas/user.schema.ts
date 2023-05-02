@@ -2,12 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { EAccountStatus, AccountRoles } from '@constants';
 import { HydratedDocument } from 'mongoose';
 
-const COLLECTION_NAME = 'accounts';
+const COLLECTION_NAME = 'users';
 
-export type AccountDocument = HydratedDocument<Account>;
+export type UserDocument = HydratedDocument<User>;
 
 @Schema({ collection: COLLECTION_NAME, timestamps: true })
-export class Account {
+export class User {
     @Prop({ maxlength: 150, trim: true })
     name: string;
 
@@ -27,4 +27,4 @@ export class Account {
     roles: string[];
 }
 
-export const AccountSchema = SchemaFactory.createForClass(Account);
+export const UserSchema = SchemaFactory.createForClass(User);
