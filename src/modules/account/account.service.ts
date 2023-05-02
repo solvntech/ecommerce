@@ -5,44 +5,41 @@ import { Model } from 'mongoose';
 import { BcryptHelper } from '@helpers/bcrypt.helper';
 import { plainToClass } from 'class-transformer';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
-import { ShopAccount, ShopAccountDocument } from '@schemas/shop-account.schema';
+import { Account, AccountDocument } from '@schemas/account.schema';
 import { ErrorDto, SuccessDto, TError } from '@dto/core';
-import { ShopAccountDto } from '@dto/shop-account.dto';
+import { AccountResponseDto } from '@dto/account-response.dto';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class ShopAccountService {
-    constructor(
-        @InjectModel(ShopAccount.name) private _ShopAccountModel: Model<ShopAccount>,
-        private _JwtService: JwtService
-    ) {}
+export class AccountService {
+    constructor(@InjectModel(Account.name) private _AccountModel: Model<Account>, private _JwtService: JwtService) {}
 
-    async createShopAccount(account: AccountDto): Promise<SuccessDto | TError> {
+    async createAccount(account: AccountDto): Promise<SuccessDto | TError> {
         try {
-            const existAccount = await this._ShopAccountModel.findOne({ email: account.email });
+            const existAccount = await this._AccountModel.findOne({ email: account.email });
             if (existAccount) {
-                return new ErrorDto('Duplicate shop-account', HttpStatus.CONFLICT).error;
+                return new ErrorDto('Duplicate account', HttpStatus.CONFLICT).error;
             }
             account.password = await BcryptHelper.hashPassword(account.password);
-            const newShop: ShopAccountDocument = await this._ShopAccountModel.create(account);
+            const newShop: AccountDocument = await this._AccountModel.create(account);
             return new SuccessDto(
-                'Create shop-account successfully',
+                'Create account successfully',
                 HttpStatus.CREATED,
                 this.generationAuthResponse(newShop)
             );
         } catch (e) {
             LoggerServerHelper.error(e.toString());
-            return new ErrorDto('Create shop-account failed', HttpStatus.BAD_REQUEST).error;
+            return new ErrorDto('Create account failed', HttpStatus.BAD_REQUEST).error;
         }
     }
 
     async findAllAccount(): Promise<SuccessDto | TError> {
         try {
-            const shops = await this._ShopAccountModel.find().lean();
+            const account: AccountDocument = await this._AccountModel.find().lean();
             return new SuccessDto(
-                'Find all shops successfully',
+                'Find all accounts successfully',
                 HttpStatus.CREATED,
-                plainToClass(ShopAccountDto, shops)
+                plainToClass(AccountResponseDto, account)
             );
         } catch (e) {
             return new ErrorDto(e, HttpStatus.BAD_REQUEST).error;
@@ -51,11 +48,11 @@ export class ShopAccountService {
 
     async validateShop(email: string, password: string): Promise<SuccessDto | TError> {
         try {
-            const currentShop: ShopAccountDocument = await this._ShopAccountModel.findOne({ email: email }).lean();
+            const currentAccount: AccountDocument = await this._AccountModel.findOne({ email: email }).lean();
 
-            if (currentShop) {
-                if (await BcryptHelper.validatePassword(password, currentShop.password)) {
-                    return this.generationAuthResponse(currentShop);
+            if (currentAccount) {
+                if (await BcryptHelper.validatePassword(password, currentAccount.password)) {
+                    return this.generationAuthResponse(currentAccount);
                 }
                 return new ErrorDto('Email or password is incorrect', HttpStatus.BAD_REQUEST).error;
             }
@@ -66,7 +63,7 @@ export class ShopAccountService {
         }
     }
 
-    private generationAuthResponse(account: ShopAccountDocument): SuccessDto {
+    private generationAuthResponse(account: AccountDocument): SuccessDto {
         const payload = {
             id: account._id,
             role: account.roles,

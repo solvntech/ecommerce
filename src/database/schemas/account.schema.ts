@@ -1,13 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { EAccountStatus, ShopRoles } from '@constants';
+import { EAccountStatus, AccountRoles } from '@constants';
 import { HydratedDocument } from 'mongoose';
 
-const COLLECTION_NAME = 'shop_accounts';
+const COLLECTION_NAME = 'accounts';
 
-export type ShopAccountDocument = HydratedDocument<ShopAccount>;
+export type AccountDocument = HydratedDocument<Account>;
 
 @Schema({ collection: COLLECTION_NAME, timestamps: true })
-export class ShopAccount {
+export class Account {
     @Prop({ maxlength: 150, trim: true })
     name: string;
 
@@ -23,8 +23,8 @@ export class ShopAccount {
     @Prop({ type: Boolean, default: false })
     verify: boolean;
 
-    @Prop({ type: Array, default: [ShopRoles.SHOP] })
+    @Prop({ type: Array, default: [AccountRoles.SHOP] })
     roles: string[];
 }
 
-export const ShopAccountSchema = SchemaFactory.createForClass(ShopAccount);
+export const AccountSchema = SchemaFactory.createForClass(Account);

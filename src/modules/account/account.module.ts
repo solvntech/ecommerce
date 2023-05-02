@@ -1,21 +1,21 @@
 import { Module } from '@nestjs/common';
-import { ShopAccountService } from './shop-account.service';
-import { ShopAccountController } from './shop-account.controller';
+import { AccountService } from './account.service';
+import { AccountController } from './account.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ShopAccount, ShopAccountSchema } from '@schemas/shop-account.schema';
+import { Account, AccountSchema } from '@schemas/account.schema';
 import { PassportModule } from '@nestjs/passport';
-import { ShopAuthStrategy } from '@modules/shop-account/strategies/shop-auth.strategy';
+import { LocalAuthStrategy } from '@modules/account/strategies/local-auth.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-    providers: [ShopAccountService, ShopAuthStrategy],
-    controllers: [ShopAccountController],
+    providers: [AccountService, LocalAuthStrategy],
+    controllers: [AccountController],
     imports: [
         MongooseModule.forFeature([
             {
-                name: ShopAccount.name,
-                schema: ShopAccountSchema,
+                name: Account.name,
+                schema: AccountSchema,
             },
         ]),
         PassportModule,
@@ -31,4 +31,4 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         }),
     ],
 })
-export class ShopAccountModule {}
+export class AccountModule {}

@@ -1,13 +1,13 @@
 import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { AccountDto } from '@dto/account.dto';
-import { ShopAccountService } from '@modules/shop-account/shop-account.service';
-import { ShopAuthGuard } from '@modules/shop-account/guards/shop-auth.guard';
+import { AccountService } from '@modules/account/account.service';
+import { LocalAuthGuard } from '@modules/account/guards/local-auth.guard';
 
 @Controller()
-export class ShopAccountController {
-    constructor(private _ShopAccountService: ShopAccountService) {}
+export class AccountController {
+    constructor(private _ShopAccountService: AccountService) {}
 
-    @UseGuards(ShopAuthGuard)
+    @UseGuards(LocalAuthGuard)
     @Post('login')
     login(@Request() req) {
         return req.user;
@@ -15,10 +15,10 @@ export class ShopAccountController {
 
     @Post('register')
     registerAccount(@Body() account: AccountDto) {
-        return this._ShopAccountService.createShopAccount(account);
+        return this._ShopAccountService.createAccount(account);
     }
 
-    @Get('')
+    @Get('all-accounts')
     findAllShopAccount() {
         return this._ShopAccountService.findAllAccount();
     }
