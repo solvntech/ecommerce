@@ -1,6 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
 import { DefaultDataDto } from '@dto/core';
-import { EAccountStatus } from '@constants';
+import { UserStatus } from '@constants';
 
 @Exclude()
 export class UserDto extends DefaultDataDto {
@@ -8,7 +8,7 @@ export class UserDto extends DefaultDataDto {
     email: string;
 
     @Expose()
-    status: EAccountStatus;
+    status: UserStatus;
 
     @Expose()
     roles: string[];

@@ -1,0 +1,7 @@
+export const UserRoles = {
+    ADMIN: '6451606371b343d434601a59',
+    WRITE: '645160728482cdba7de77061',
+    EDITOR: '6451607ed6e24e7bad6e14cb',
+    SHOP: '64516088873bb753dc25a98c',
+    USER: '645160985a7b498409ec98da',
+};

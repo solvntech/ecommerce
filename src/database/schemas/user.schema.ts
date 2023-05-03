@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { EAccountStatus, AccountRoles } from '@constants';
+import { UserStatus, UserRoles } from '@constants';
 import { HydratedDocument } from 'mongoose';
 
 const COLLECTION_NAME = 'users';
@@ -17,13 +17,13 @@ export class User {
     @Prop({ isRequired: true, minlength: 8 })
     password: string;
 
-    @Prop({ enum: EAccountStatus, default: EAccountStatus.IN_ACTIVE })
-    status: EAccountStatus;
+    @Prop({ enum: UserStatus, default: UserStatus.IN_ACTIVE })
+    status: UserStatus;
 
     @Prop({ type: Boolean, default: false })
     verify: boolean;
 
-    @Prop({ type: Array, default: [AccountRoles.SHOP] })
+    @Prop({ type: Array, default: [UserRoles.SHOP] })
     roles: string[];
 }
 
