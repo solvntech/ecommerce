@@ -3,7 +3,12 @@ export type PairKey = {
     privateKey: string;
 };
 
-export type PairToken = {
+export type PairSecretToken = {
     accessToken: string;
     refreshToken: string;
+};
+
+export type TToken = PairKey & {
+    user: string;
+    refreshToken: string[];
 };
