@@ -38,14 +38,9 @@ export class TokenService {
     private createSecretPairKey(): PairKey {
         const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
             modulusLength: 4096,
+            privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
+            publicKeyEncoding: { type: 'pkcs1', format: 'pem' },
         });
-        return {
-            privateKey: this.convertObjectKet(privateKey),
-            publicKey: this.convertObjectKet(publicKey),
-        };
-    }
-
-    private convertObjectKet(key: crypto.KeyObject): string {
-        return key.export({ type: 'pkcs1', format: 'pem' }).toString('utf-8');
+        return { privateKey, publicKey };
     }
 }
