@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { JwtPayload, PairKey, PairSecretToken, TToken } from '@types';
 import { JwtService } from '@nestjs/jwt';
+import { TokenExpires } from '@constants';
 
 @Injectable()
 export class TokenService {
@@ -28,15 +29,15 @@ export class TokenService {
         }
 
         // create pair jwt token
-        const accessToken: string = this.createJwtToken(payload, privateKey, '1h');
-        const refreshToken: string = this.createJwtToken(payload, privateKey, '7d');
+        const accessToken: string = this.createJwtToken(payload, privateKey, TokenExpires.ACCESS_TOKEN);
+        const refreshToken: string = this.createJwtToken(payload, privateKey, TokenExpires.REFRESH_TOKEN);
 
         if (!token) {
             await this.saveToken({
                 user: payload.id,
                 privateKey,
                 publicKey,
-                refreshToken: [refreshToken],
+                refreshToken: refreshToken,
             });
         }
 

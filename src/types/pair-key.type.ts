@@ -10,5 +10,5 @@ export type PairSecretToken = {
 
 export type TToken = PairKey & {
     user: string;
-    refreshToken: string[];
+    refreshToken: string;
 };

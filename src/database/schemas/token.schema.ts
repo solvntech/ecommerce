@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import * as mongoose from 'mongoose';
 import { User } from '@schemas/user.schema';
+import { TokenExpires } from '@constants';
 
 const COLLECTION_NAME = 'tokens';
 
@@ -19,7 +20,13 @@ export class Token {
     privateKey: string;
 
     @Prop({ type: Array, default: [] })
-    refreshToken: string[];
+    refreshTokenUsed: string[];
+
+    @Prop({ isRequired: true })
+    refreshToken: string;
+
+    @Prop({ default: TokenExpires.REFRESH_TOKEN })
+    refreshTokenExpiresIn: string;
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);
