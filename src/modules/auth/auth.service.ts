@@ -36,11 +36,10 @@ export class AuthService {
                 if (tokenRes) {
                     return new SuccessDto('Login successfully', HttpStatus.OK, tokenRes);
                 }
-                throw new ErrorDto('Create token failed', HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new ErrorDto('Generate token failed', HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            throw new ErrorDto('Email or password is incorrect', HttpStatus.BAD_REQUEST);
         }
-        throw new ErrorDto('Account has not existed', HttpStatus.BAD_REQUEST);
+        throw new ErrorDto('Email or password is incorrect', HttpStatus.BAD_REQUEST);
     }
 
     /* generate token response */
