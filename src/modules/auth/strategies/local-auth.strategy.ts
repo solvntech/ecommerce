@@ -12,6 +12,6 @@ export class LocalAuthStrategy extends PassportStrategy(Strategy) {
     }
 
     validate(username: string, password: string): Promise<any> {
-        return this._ShopAccountService.validateShop(username, password);
+        return this._ShopAccountService.validateUser(username, password);
     }
 }

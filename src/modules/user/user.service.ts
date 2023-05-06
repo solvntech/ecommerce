@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '@schemas/user.schema';
 import { Model } from 'mongoose';
-import { ErrorDto, SuccessDto, TError } from '@dto/core';
+import { SuccessDto, TError } from '@dto/core';
 import { plainToClass } from 'class-transformer';
 import { UserDto } from '@dto/user.dto';
 import { AccountDto } from '@dto/account.dto';
@@ -12,12 +12,8 @@ export class UserService {
     constructor(@InjectModel(User.name) private _UserModel: Model<User>) {}
 
     async findAll(): Promise<SuccessDto | TError> {
-        try {
-            const users: UserDocument = await this._UserModel.find().lean();
-            return new SuccessDto('Find all users successfully', HttpStatus.OK, plainToClass(UserDto, users));
-        } catch (e) {
-            return new ErrorDto(e, HttpStatus.BAD_REQUEST).error;
-        }
+        const users: UserDocument = await this._UserModel.find().lean();
+        return new SuccessDto(null, HttpStatus.OK, plainToClass(UserDto, users));
     }
 
     async findUserByEmail(email: string): Promise<UserDocument> {
