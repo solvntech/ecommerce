@@ -13,7 +13,6 @@ export class Configuration {
             const envMode: string = process.env.NODE_ENV || ENV_MODE.DEV;
             Configuration._config = {
                 env: envMode,
-                secret: process.env[`${envMode}_SECRET_KEY`],
                 port: parseInt(process.env[`${envMode}_API_PORT`], 10),
                 mongo: {
                     host: process.env[`${envMode}_MONGO_HOST`],
@@ -21,6 +20,11 @@ export class Configuration {
                     username: process.env[`${envMode}_MONGO_USERNAME`],
                     password: process.env[`${envMode}_MONGO_PASSWORD`],
                     databaseName: process.env[`${envMode}_MONGO_BD_NAME`],
+                },
+                smtpHost: process.env[`${envMode}_SMTP_HOST`],
+                smtpAuth: {
+                    user: process.env[`${envMode}_SMTP_USER`],
+                    pass: process.env[`${envMode}_SMTP_PASS`],
                 },
             };
         }

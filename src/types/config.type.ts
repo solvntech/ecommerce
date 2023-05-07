@@ -1,6 +1,5 @@
 export type TConfig = {
     env: string;
-    secret: string;
     port: number;
     mongo: {
         port: number;
@@ -8,5 +7,10 @@ export type TConfig = {
         username: string;
         password: string;
         databaseName: string;
+    };
+    smtpHost: string;
+    smtpAuth: {
+        user: string;
+        pass: string;
     };
 };

@@ -6,10 +6,15 @@ import { ErrorDto, SuccessDto } from '@dto/core';
 import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
 import { JwtPayload } from '@types';
+import { MailerService } from '@modules/mailer/mailer.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private _UserService: UserService, private _TokenService: TokenService) {}
+    constructor(
+        private _UserService: UserService,
+        private _TokenService: TokenService,
+        private _MailerService: MailerService,
+    ) {}
 
     async createAccount(account: AccountDto): Promise<SuccessDto> {
         const existAccount: UserDocument = await this._UserService.findUserByEmail(account.email);
@@ -28,7 +33,6 @@ export class AuthService {
 
     async validateUser(email: string, password: string): Promise<SuccessDto> {
         const currentAccount: UserDocument = await this._UserService.findUserByEmail(email);
-
         if (currentAccount) {
             if (await BcryptHelper.validatePassword(password, currentAccount.password)) {
                 const tokenRes = await this.generationAuthResponse(currentAccount);
