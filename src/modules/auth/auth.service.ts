@@ -5,7 +5,7 @@ import { UserDocument } from '@schemas/user.schema';
 import { ErrorDto, SuccessDto } from '@dto/core';
 import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
-import { JwtPayload } from '@types';
+import { JwtPayload, PairSecretToken } from '@types';
 import { MailerService } from '@modules/mailer/mailer.service';
 
 @Injectable()
@@ -22,11 +22,22 @@ export class AuthService {
             throw new ErrorDto('Duplicate account', HttpStatus.CONFLICT);
         }
         account.password = await BcryptHelper.hashPassword(account.password);
-        const newShop: UserDocument = await this._UserService.create(account);
-        const tokenRes = await this.generationAuthResponse(newShop);
+        const user: UserDocument = await this._UserService.create(account);
 
-        if (tokenRes) {
-            return new SuccessDto('Create account successfully', HttpStatus.CREATED, tokenRes);
+        const payload: JwtPayload = {
+            id: user._id.toString(),
+            role: user.roles,
+            email: user.email,
+        };
+
+        // create jwt token
+        const tokenObj: PairSecretToken = await this._TokenService.generateToken(payload);
+
+        if (tokenObj) {
+            return new SuccessDto('Create account successfully', HttpStatus.CREATED, {
+                ...payload,
+                ...tokenObj,
+            });
         }
         throw new ErrorDto('Create account successfully but create token failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -35,32 +46,32 @@ export class AuthService {
         const currentAccount: UserDocument = await this._UserService.findUserByEmail(email);
         if (currentAccount) {
             if (await BcryptHelper.validatePassword(password, currentAccount.password)) {
-                const tokenRes = await this.generationAuthResponse(currentAccount);
+                const payload: JwtPayload = {
+                    id: currentAccount._id.toString(),
+                    role: currentAccount.roles,
+                    email: currentAccount.email,
+                };
 
-                if (tokenRes) {
-                    return new SuccessDto('Login successfully', HttpStatus.OK, tokenRes);
+                // create jwt token
+                const tokenObj: PairSecretToken = await this._TokenService.generateToken(payload);
+
+                if (tokenObj) {
+                    return new SuccessDto('Login successfully', HttpStatus.OK, {
+                        ...payload,
+                        ...tokenObj,
+                    });
                 }
-                throw new ErrorDto('Generate token failed', HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new ErrorDto('Account is logged', HttpStatus.CONFLICT);
             }
         }
         throw new ErrorDto('Email or password is incorrect', HttpStatus.BAD_REQUEST);
     }
 
-    /* generate token response */
-    private async generationAuthResponse(account: UserDocument): Promise<any> {
-        const payload: JwtPayload = {
-            id: account._id.toString(),
-            role: account.roles,
-            email: account.email,
-        };
-
-        // create jwt token
-        const { accessToken, refreshToken } = await this._TokenService.generateToken(payload);
-
-        return {
-            ...payload,
-            accessToken,
-            refreshToken,
-        };
+    async logout(refreshToken: string): Promise<SuccessDto> {
+        const isSuccess: boolean = await this._TokenService.deactivateToken(refreshToken);
+        if (isSuccess) {
+            return new SuccessDto('Logout successfully');
+        }
+        throw new ErrorDto('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
 }

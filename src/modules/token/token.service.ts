@@ -6,12 +6,13 @@ import * as crypto from 'crypto';
 import { JwtPayload, PairKey, PairSecretToken, TToken } from '@types';
 import { JwtService } from '@nestjs/jwt';
 import { TokenExpires } from '@constants';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class TokenService {
     constructor(@InjectModel(Token.name) private _TokenModel: Model<Token>, private _JwtService: JwtService) {}
 
-    async generateToken(payload: JwtPayload): Promise<PairSecretToken> {
+    async generateToken(payload: JwtPayload): Promise<PairSecretToken | null> {
         // find secret pair key
         const token: TokenDocument = await this._TokenModel.findOne({ user: payload.id }).lean();
 
@@ -19,6 +20,10 @@ export class TokenService {
         let publicKey: string;
 
         if (token) {
+            // user logged
+            if (token.refreshToken) {
+                return null;
+            }
             privateKey = token.privateKey;
             publicKey = token.publicKey;
         } else {
@@ -30,9 +35,10 @@ export class TokenService {
 
         // create pair jwt token
         const accessToken: string = this.createJwtToken(payload, privateKey, TokenExpires.ACCESS_TOKEN);
-        const refreshToken: string = this.createJwtToken(payload, privateKey, TokenExpires.REFRESH_TOKEN);
+        const refreshToken: string = this.createJwtToken(payload, publicKey, TokenExpires.REFRESH_TOKEN);
 
-        if (!token) {
+        // update refresh token
+        if (!token || !token.refreshToken) {
             await this.saveToken({
                 user: payload.id,
                 privateKey,
@@ -45,30 +51,48 @@ export class TokenService {
     }
 
     private async saveToken(token: TToken): Promise<TokenDocument> {
-        return this._TokenModel.create(token);
+        const { user, ...obj } = token;
+        return this._TokenModel.findOneAndUpdate({ user }, obj, { upsert: true, new: true }).lean();
     }
 
-    private createJwtToken(payload: JwtPayload, privateKey: string, expiresIn: string) {
+    private createJwtToken(payload: JwtPayload, secretKey: string, expiresIn: string) {
         return this._JwtService.sign(payload, {
-            algorithm: 'RS256',
+            // algorithm: 'RS256',
             expiresIn,
-            privateKey,
+            privateKey: secretKey,
         });
     }
 
     private createSecretPairKey(): PairKey {
-        const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-            modulusLength: 2048,
-            privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
-            publicKeyEncoding: { type: 'pkcs1', format: 'pem' },
-        });
-        return { privateKey, publicKey };
+        return {
+            privateKey: crypto.randomBytes(64).toString('hex'),
+            publicKey: crypto.randomBytes(64).toString('hex'),
+        };
     }
 
-    async verifyToken(userId: string, token: string): Promise<JwtPayload> {
-        const tokenData: TokenDocument = await this._TokenModel.findOne({ user: userId }).lean();
-        return this._JwtService.verify(token, {
-            publicKey: tokenData.publicKey,
-        });
+    async findToken(userId: string): Promise<TokenDocument> {
+        const tokenData: TokenDocument = await this._TokenModel
+            .findOne({ user: new mongoose.Types.ObjectId(userId) })
+            .lean()
+            .lean();
+        return tokenData?.refreshToken ? tokenData : null;
+    }
+
+    async deactivateToken(refreshToken: string): Promise<boolean> {
+        const tokenData: TokenDocument = await this._TokenModel.findOne({ refreshToken }).lean();
+
+        if (!tokenData) {
+            return false;
+        }
+
+        await this._TokenModel.updateOne(
+            { refreshToken },
+            {
+                $set: { refreshToken: '' },
+                $push: { refreshTokenUsed: refreshToken },
+            },
+        );
+
+        return true;
     }
 }
