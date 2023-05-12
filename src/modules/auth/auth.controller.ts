@@ -2,7 +2,8 @@ import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AccountDto } from '@dto/account.dto';
 import { AuthService } from '@modules/auth/auth.service';
 import { LocalAuthGuard } from '@modules/auth/guards/local-auth.guard';
-import { LogoutDto } from '@dto/logout.dto';
+import { JwtGuard } from '@modules/token/guards/jwt.guard';
+import { HEADER_KEY } from '@constants';
 
 @Controller()
 export class AuthController {
@@ -19,8 +20,10 @@ export class AuthController {
         return this._ShopAccountService.createAccount(account);
     }
 
+    @UseGuards(JwtGuard)
     @Post('logout')
-    logout(@Body() secretObj: LogoutDto) {
-        return this._ShopAccountService.logout(secretObj.refreshToken);
+    logout(@Request() req) {
+        const refreshToken = req.get(HEADER_KEY.REFRESH_TOKEN);
+        return this._ShopAccountService.logout(refreshToken);
     }
 }

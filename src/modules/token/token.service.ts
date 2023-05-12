@@ -16,22 +16,12 @@ export class TokenService {
         // find secret pair key
         const token: TokenDocument = await this._TokenModel.findOne({ user: payload.id }).lean();
 
-        let privateKey: string;
-        let publicKey: string;
-
         if (token) {
-            // user logged
-            if (token.refreshToken) {
-                return null;
-            }
-            privateKey = token.privateKey;
-            publicKey = token.publicKey;
-        } else {
-            // create rsa pair key
-            const pairSecretKey: PairKey = this.createSecretPairKey();
-            privateKey = pairSecretKey.privateKey;
-            publicKey = pairSecretKey.publicKey;
+            return null;
         }
+
+        // create pair key
+        const { privateKey, publicKey }: PairKey = this.createSecretPairKey();
 
         // create pair jwt token
         const accessToken: string = this.createJwtToken(payload, privateKey, TokenExpires.ACCESS_TOKEN);
@@ -78,21 +68,13 @@ export class TokenService {
         return tokenData?.refreshToken ? tokenData : null;
     }
 
-    async deactivateToken(refreshToken: string): Promise<boolean> {
-        const tokenData: TokenDocument = await this._TokenModel.findOne({ refreshToken }).lean();
+    async removeToken(refreshToken: string): Promise<boolean> {
+        const tokenData: TokenDocument = await this._TokenModel.findOneAndRemove({ refreshToken }).lean();
 
-        if (!tokenData) {
-            return false;
-        }
+        return !!tokenData;
+    }
 
-        await this._TokenModel.updateOne(
-            { refreshToken },
-            {
-                $set: { refreshToken: '' },
-                $push: { refreshTokenUsed: refreshToken },
-            },
-        );
-
-        return true;
+    extractToken(token: string): JwtPayload {
+        return this._JwtService.decode(token) as JwtPayload;
     }
 }

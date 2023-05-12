@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import * as _ from 'lodash';
-import { LoggerServerHelper } from '@helpers/logger-server.helper';
 import { TokenService } from '@modules/token/token.service';
 import { TokenDocument } from '@schemas/token.schema';
+import { JwtPayload } from '@types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,22 +12,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             {
                 jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
                 secretOrKeyProvider: async (request, rawJwtToken, done) => {
-                    const tokenArr = _.split(rawJwtToken, '.');
-                    if (_.get(tokenArr, 1)) {
-                        try {
-                            const userId: string = JSON.parse(atob(_.get(tokenArr, 1)));
-                            const token: TokenDocument = await this._TokenService.findToken(userId);
-                            if (token) {
-                                done(null, token.privateKey);
-                            } else {
-                                done('Invalid token');
-                            }
-                        } catch (e) {
-                            LoggerServerHelper.error(e.toString());
+                    const userPayload: JwtPayload = this._TokenService.extractToken(rawJwtToken);
+                    if (userPayload) {
+                        const token: TokenDocument = await this._TokenService.findToken(userPayload.id);
+                        if (token) {
+                            done(null, token.privateKey);
+                        } else {
                             done('Invalid token');
                         }
+                    } else {
+                        done('Invalid token');
                     }
-                    done('Invalid token');
                 },
             },
             (payload, done) => {

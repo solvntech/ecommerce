@@ -68,7 +68,7 @@ export class AuthService {
     }
 
     async logout(refreshToken: string): Promise<SuccessDto> {
-        const isSuccess: boolean = await this._TokenService.deactivateToken(refreshToken);
+        const isSuccess: boolean = await this._TokenService.removeToken(refreshToken);
         if (isSuccess) {
             return new SuccessDto('Logout successfully');
         }
