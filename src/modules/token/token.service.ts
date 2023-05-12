@@ -61,20 +61,45 @@ export class TokenService {
     }
 
     async findToken(userId: string): Promise<TokenDocument> {
-        const tokenData: TokenDocument = await this._TokenModel
+        return this._TokenModel
             .findOne({ user: new mongoose.Types.ObjectId(userId) })
             .lean()
             .lean();
-        return tokenData?.refreshToken ? tokenData : null;
     }
 
-    async removeToken(refreshToken: string): Promise<boolean> {
-        const tokenData: TokenDocument = await this._TokenModel.findOneAndRemove({ refreshToken }).lean();
+    async removeToken(userId: string): Promise<boolean> {
+        const tokenData: TokenDocument = await this._TokenModel.findOneAndRemove({ user: userId }).lean();
 
         return !!tokenData;
     }
 
     extractToken(token: string): JwtPayload {
         return this._JwtService.decode(token) as JwtPayload;
+    }
+
+    async provideNewToken(payload: JwtPayload, oldRefreshToken: string): Promise<PairSecretToken> {
+        // create new pair key
+        const { privateKey, publicKey }: PairKey = this.createSecretPairKey();
+
+        // create new pair jwt token
+        const accessToken: string = this.createJwtToken(payload, privateKey, TokenExpires.ACCESS_TOKEN);
+        const refreshToken: string = this.createJwtToken(payload, publicKey, TokenExpires.REFRESH_TOKEN);
+
+        // update token
+        await this._TokenModel.updateOne(
+            { user: payload.id },
+            {
+                $set: { refreshToken, privateKey, publicKey },
+                $push: { refreshTokenUsed: oldRefreshToken },
+            },
+        );
+
+        return { refreshToken, accessToken };
+    }
+
+    async verifyToken(token: string, secretKey: string): Promise<JwtPayload> {
+        return this._JwtService.verify(token, {
+            secret: secretKey,
+        });
     }
 }

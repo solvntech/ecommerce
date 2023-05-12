@@ -26,4 +26,10 @@ export class AuthController {
         const refreshToken = req.get(HEADER_KEY.REFRESH_TOKEN);
         return this._ShopAccountService.logout(refreshToken);
     }
+
+    @Post('refresh-token')
+    refreshToken(@Request() req) {
+        const refreshToken = req.get(HEADER_KEY.REFRESH_TOKEN);
+        return this._ShopAccountService.handleRefreshToken(refreshToken);
+    }
 }

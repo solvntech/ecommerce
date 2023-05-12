@@ -3,6 +3,7 @@ import { HttpException } from '@nestjs/common';
 export type TError = {
     statusCode: number;
     message: string | object;
+    data?: any;
 };
 
 export class ErrorDto extends HttpException {

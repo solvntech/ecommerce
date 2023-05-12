@@ -7,6 +7,9 @@ import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
 import { JwtPayload, PairSecretToken } from '@types';
 import { MailerService } from '@modules/mailer/mailer.service';
+import { TokenDocument } from '@schemas/token.schema';
+import * as _ from 'lodash';
+import { LoggerServerHelper } from '@helpers/logger-server.helper';
 
 @Injectable()
 export class AuthService {
@@ -68,10 +71,55 @@ export class AuthService {
     }
 
     async logout(refreshToken: string): Promise<SuccessDto> {
-        const isSuccess: boolean = await this._TokenService.removeToken(refreshToken);
-        if (isSuccess) {
-            return new SuccessDto('Logout successfully');
+        const userPayload: JwtPayload = this._TokenService.extractToken(refreshToken);
+        if (userPayload) {
+            const isSuccess: boolean = await this._TokenService.removeToken(userPayload.id);
+            if (isSuccess) {
+                return new SuccessDto('Logout successfully');
+            }
         }
-        throw new ErrorDto('Unauthorized', HttpStatus.UNAUTHORIZED);
+        throw new ErrorDto('Invalid Token', HttpStatus.BAD_REQUEST);
+    }
+
+    async handleRefreshToken(refreshToken: string): Promise<SuccessDto> {
+        const userPayload: JwtPayload = this._TokenService.extractToken(refreshToken);
+
+        if (!userPayload) {
+            throw new ErrorDto('Invalid Token', HttpStatus.BAD_REQUEST);
+        }
+
+        const token: TokenDocument = await this._TokenService.findToken(userPayload.id);
+
+        if (!token) {
+            throw new ErrorDto('Invalid Token', HttpStatus.BAD_REQUEST);
+        }
+
+        if (_.includes(token.refreshTokenUsed, refreshToken)) {
+            // remove token
+            await this._TokenService.removeToken(userPayload.id);
+            throw new ErrorDto('Account was stolen', HttpStatus.FORBIDDEN);
+        }
+
+        if (token.refreshToken !== refreshToken) {
+            throw new ErrorDto('Invalid Token', HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            await this._TokenService.verifyToken(refreshToken, token.publicKey);
+            const tokenObj: PairSecretToken = await this._TokenService.provideNewToken(
+                {
+                    id: userPayload.id,
+                    email: userPayload.email,
+                    role: userPayload.role,
+                },
+                refreshToken,
+            );
+            return new SuccessDto(null, HttpStatus.CREATED, tokenObj);
+        } catch (e) {
+            LoggerServerHelper.error(e.toString());
+            // remove token
+            await this._TokenService.removeToken(refreshToken);
+            throw new ErrorDto('Token is expired', HttpStatus.FORBIDDEN);
+        }
     }
 }
