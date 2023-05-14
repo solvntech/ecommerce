@@ -25,8 +25,6 @@ export class ProductDto {
     @Expose()
     description: string;
 
-    @Expose()
-    @IsNotEmpty()
     shop: string;
 
     @Expose()
