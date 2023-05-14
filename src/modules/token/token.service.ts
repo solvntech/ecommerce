@@ -67,8 +67,8 @@ export class TokenService {
             .lean();
     }
 
-    async removeToken(userId: string): Promise<boolean> {
-        const tokenData: TokenDocument = await this._TokenModel.findOneAndRemove({ user: userId }).lean();
+    async removeToken(by: 'user' | 'refreshToken', value: string): Promise<boolean> {
+        const tokenData: TokenDocument = await this._TokenModel.findOneAndRemove({ [by]: value }).lean();
 
         return !!tokenData;
     }

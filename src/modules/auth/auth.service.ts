@@ -71,12 +71,9 @@ export class AuthService {
     }
 
     async logout(refreshToken: string): Promise<SuccessDto> {
-        const userPayload: JwtPayload = this._TokenService.extractToken(refreshToken);
-        if (userPayload) {
-            const isSuccess: boolean = await this._TokenService.removeToken(userPayload.id);
-            if (isSuccess) {
-                return new SuccessDto('Logout successfully');
-            }
+        const isSuccess: boolean = await this._TokenService.removeToken('refreshToken', refreshToken);
+        if (isSuccess) {
+            return new SuccessDto('Logout successfully');
         }
         throw new ErrorDto('Invalid Token', HttpStatus.BAD_REQUEST);
     }
@@ -96,7 +93,7 @@ export class AuthService {
 
         if (_.includes(token.refreshTokenUsed, refreshToken)) {
             // remove token
-            await this._TokenService.removeToken(userPayload.id);
+            await this._TokenService.removeToken('user', userPayload.id);
             throw new ErrorDto('Account was stolen', HttpStatus.FORBIDDEN);
         }
 
@@ -118,7 +115,7 @@ export class AuthService {
         } catch (e) {
             LoggerServerHelper.error(e.toString());
             // remove token
-            await this._TokenService.removeToken(refreshToken);
+            await this._TokenService.removeToken('user', userPayload.id);
             throw new ErrorDto('Token is expired', HttpStatus.FORBIDDEN);
         }
     }
