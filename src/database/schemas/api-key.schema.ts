@@ -8,13 +8,13 @@ export type APIKeyDocument = HydratedDocument<APIKey>;
 
 @Schema({ collection: COLLECTION_NAME, timestamps: true })
 export class APIKey {
-    @Prop({ isRequired: true, unique: true })
+    @Prop({ required: true, unique: true })
     key: string;
 
     @Prop({ type: Boolean, default: true })
     status: boolean;
 
-    @Prop({ type: [String], isRequired: true, enum: Permission })
+    @Prop({ type: [String], required: true, enum: Permission })
     permissions: string[];
 }
 

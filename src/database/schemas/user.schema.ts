@@ -11,10 +11,10 @@ export class User {
     @Prop({ maxlength: 150, trim: true })
     name: string;
 
-    @Prop({ unique: true, isRequired: true, trim: true })
+    @Prop({ unique: true, required: true, trim: true })
     email: string;
 
-    @Prop({ isRequired: true, minlength: 8 })
+    @Prop({ required: true, minlength: 8 })
     password: string;
 
     @Prop({ enum: UserStatus, default: UserStatus.IN_ACTIVE })

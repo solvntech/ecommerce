@@ -9,19 +9,19 @@ export type TokenDocument = HydratedDocument<Token>;
 
 @Schema({ collection: COLLECTION_NAME, timestamps: true })
 export class Token {
-    @Prop({ type: mongoose.Schema.Types.ObjectId, isRequired: true, ref: User.name })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: User.name })
     user: User;
 
-    @Prop({ isRequired: true })
+    @Prop({ required: true })
     publicKey: string;
 
-    @Prop({ isRequired: true })
+    @Prop({ required: true })
     privateKey: string;
 
     @Prop({ type: Array, default: [] })
     refreshTokenUsed: string[];
 
-    @Prop({ isRequired: true })
+    @Prop({ required: true })
     refreshToken: string;
 }
 
