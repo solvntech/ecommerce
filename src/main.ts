@@ -5,7 +5,13 @@ import { LoggerServerHelper } from '@helpers/logger-server.helper';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, { cors: true, rawBody: true });
+    const app = await NestFactory.create(AppModule, { rawBody: true });
+
+    app.enableCors({
+        origin: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+    });
 
     // init logger
     LoggerServerHelper.init();

@@ -2,14 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { User } from '@schemas/user.schema';
-import {
-    ProductAttributes,
-    ProductAttributesSchema,
-    Clothing,
-    ClothingSchema,
-    Electronic,
-    ElectronicSchema,
-} from '@schemas/product';
+import { ProductAttributes, ProductAttributesSchema, RegistrySchema } from '@schemas/product';
 
 const COLLECTION_NAME = 'products';
 
@@ -39,10 +32,7 @@ export class Product {
         type: ProductAttributesSchema,
         required: true,
         name: 'product_attributes',
-        discriminators: {
-            [Clothing.name]: ClothingSchema,
-            [Electronic.name]: ElectronicSchema,
-        },
+        discriminators: RegistrySchema,
     })
     attributes: ProductAttributes;
 }
