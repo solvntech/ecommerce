@@ -6,6 +6,8 @@ import { SuccessDto, TError } from '@dto/core';
 import { plainToClass } from 'class-transformer';
 import { UserDto } from '@dto/user.dto';
 import { AccountDto } from '@dto/account.dto';
+import * as mongoose from 'mongoose';
+import { LoggerServerHelper } from '@helpers/logger-server.helper';
 
 @Injectable()
 export class UserService {
@@ -18,6 +20,15 @@ export class UserService {
 
     async findUserByEmail(email: string): Promise<UserDocument> {
         return this._UserModel.findOne({ email: email }).lean();
+    }
+
+    async findUserById(id: string): Promise<UserDocument> {
+        try {
+            return this._UserModel.findById(new mongoose.Types.ObjectId(id)).lean();
+        } catch (e) {
+            LoggerServerHelper.error(e.toString());
+            return null;
+        }
     }
 
     async create(user: AccountDto): Promise<UserDocument> {
