@@ -3,6 +3,8 @@ import { HydratedDocument } from 'mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { User } from '@schemas/user.schema';
 import { ProductAttributes, ProductAttributesSchema, RegistrySchema } from '@schemas/product';
+import * as _ from 'lodash';
+import { UtilHelper } from '@helpers/util.helper';
 
 const COLLECTION_NAME = 'products';
 
@@ -19,11 +21,29 @@ export class Product {
     @Prop({ name: 'product_description' })
     description: string;
 
+    @Prop({ name: 'product_slug' })
+    slug: string;
+
+    @Prop({
+        name: 'product_ratings_average',
+        default: 4.5,
+        min: [1, 'Rating must be above 1.0'],
+        max: [5, 'Rating must be less than 5.0'],
+        set: (val) => _.round(val, 2),
+    })
+    ratingsAverage: number;
+
     @Prop({ required: true, name: 'product_price' })
     price: number;
 
     @Prop({ required: true, name: 'product_quantity' })
     quantity: number;
+
+    @Prop({ type: Boolean, name: 'product_is_draft', default: true })
+    isDraft: boolean;
+
+    @Prop({ type: Boolean, name: 'product_is_published', default: false })
+    isPublished: boolean;
 
     @Prop({ type: MongooseSchema.Types.ObjectId, name: 'shop_owner', required: true, ref: User.name })
     shop: User;
@@ -37,4 +57,11 @@ export class Product {
     attributes: ProductAttributes;
 }
 
-export const ProductSchema = SchemaFactory.createForClass(Product);
+const schema = SchemaFactory.createForClass(Product);
+
+schema.pre('save', function (next) {
+    this.slug = UtilHelper.slugify(this.name);
+    next();
+});
+
+export const ProductSchema = schema;
