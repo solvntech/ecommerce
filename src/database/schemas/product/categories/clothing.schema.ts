@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@Schema({ _id: false })
+const COLLECTION_NAME = 'clothes';
+
+@Schema({ collection: COLLECTION_NAME })
 export class Clothing {
     @Prop({ required: true })
     branch: string;

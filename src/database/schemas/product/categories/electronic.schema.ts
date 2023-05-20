@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@Schema({ _id: false })
+const COLLECTION_NAME = 'electronics';
+
+@Schema({ collection: COLLECTION_NAME })
 export class Electronic {
     @Prop({ required: true })
     manufacturer: string;

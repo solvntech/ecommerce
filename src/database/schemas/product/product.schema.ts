@@ -2,9 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { User } from '@schemas/user.schema';
-import { ProductAttributes, ProductAttributesSchema, RegistrySchema } from '@schemas/product';
+import { ProductAttributes, ProductAttributesSchema } from '@schemas/product';
 import * as _ from 'lodash';
 import { UtilHelper } from '@helpers/util.helper';
+import { ProductTypes } from '@constants';
 
 const COLLECTION_NAME = 'products';
 
@@ -42,19 +43,17 @@ export class Product {
     @Prop({ type: Boolean, name: 'product_is_draft', default: true })
     isDraft: boolean;
 
+    @Prop({ required: true, enum: ProductTypes })
+    type: ProductTypes;
+
     @Prop({ type: Boolean, name: 'product_is_published', default: false })
     isPublished: boolean;
 
     @Prop({ type: MongooseSchema.Types.ObjectId, name: 'shop_owner', required: true, ref: User.name })
     shop: User;
 
-    @Prop({
-        type: ProductAttributesSchema,
-        required: true,
-        name: 'product_attributes',
-        discriminators: RegistrySchema,
-    })
-    attributes: ProductAttributes;
+    @Prop({ type: [ProductAttributesSchema], required: true, name: 'product_attributes' })
+    attributes: ProductAttributes[];
 }
 
 const schema = SchemaFactory.createForClass(Product);

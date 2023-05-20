@@ -1,10 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ProductTypes } from '@constants';
 
-@Schema({ _id: false, discriminatorKey: 'type', autoCreate: false })
+@Schema()
 export class ProductAttributes {
-    @Prop({ required: true, enum: ProductTypes })
-    type: ProductTypes;
+    @Prop({ required: true })
+    key: string;
+
+    @Prop({ required: true })
+    value: string;
 }
 
 export const ProductAttributesSchema = SchemaFactory.createForClass(ProductAttributes);
