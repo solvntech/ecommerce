@@ -1,0 +1,12 @@
+.idea
+node_modules
+build
+dist
+logs
+test
+
+.env.example
+.eslintrc.js
+.prettierrc
+.gitignore
+package-lock.json

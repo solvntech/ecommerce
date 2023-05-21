@@ -1,6 +1,9 @@
 version: '3.9'
+networks:
+    ecommerce_network:
+        driver: bridge
 services:
-    db:
+    mongoDB:
         image: mongo
         container_name: ecommerce_db
         restart: always
@@ -13,5 +16,28 @@ services:
             MONGO_INITDB_ROOT_PASSWORD: $DEV_MONGO_PASSWORD
         volumes:
             - mongodb-data:/data/db
+        networks:
+            - ecommerce_network
+    api:
+        container_name: api
+        build:
+            context: .
+            dockerfile: .docker/api/Dockerfile
+        env_file:
+            - .env
+        environment:
+            - 'WAIT_HOSTS=${DEV_MONGO_HOST}:${DEV_MONGO_PORT}'
+        depends_on:
+            - mongoDB
+        networks:
+            - ecommerce_network
+        volumes:
+            - ./src:/usr/src/app/src
+        ports:
+            - '${DEV_API_PORT}:${DEV_API_PORT}'
+        expose:
+            - '${DEV_API_PORT}'
+        command: 'npm run start:dev'
 volumes:
+    api:
     mongodb-data:
