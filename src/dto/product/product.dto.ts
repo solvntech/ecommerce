@@ -19,10 +19,6 @@ export class ProductDto {
     quantity: number;
 
     @Expose()
-    @IsNotEmpty()
-    thumbnail: string;
-
-    @Expose()
     description: string;
 
     shop: string;

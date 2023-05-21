@@ -8,6 +8,7 @@ import { ErrorDto, SuccessDto } from '@dto/core';
 import { UserService } from '@modules/user/user.service';
 import { UserDocument } from '@schemas/user.schema';
 import { ProductDetailsService } from '@modules/product/product-details.service';
+import * as _ from 'lodash';
 
 @Injectable()
 export class ProductService {
@@ -24,14 +25,22 @@ export class ProductService {
 
     async createProduct(product: ProductDto): Promise<SuccessDto> {
         const productDetails = await this._ProductDetailsService.create(product.attributes);
-        console.log(productDetails);
-        // const shop: UserDocument = await this._UserService.findUserById(product.shop);
-        //
-        // if (!shop) {
-        //     throw new ErrorDto('Shop is incorrect', HttpStatus.NOT_FOUND);
-        // }
-        //
-        // const newProduct: ProductDocument = await this._ProductModel.create(plainToClass(Product, product));
-        return new SuccessDto('Create product successfully', HttpStatus.CREATED, productDetails);
+        const shop: UserDocument = await this._UserService.findUserById(product.shop);
+
+        if (!shop) {
+            throw new ErrorDto('Shop is incorrect', HttpStatus.NOT_FOUND);
+        }
+
+        const productPayload = plainToClass(Product, product);
+
+        productPayload['_id'] = productDetails._id;
+        productPayload.type = product.attributes.type;
+        productPayload.attributes = _.map(
+            _.filter(_.keys(product.attributes), (key) => !_.includes(['_id', '__v', 'type'], key)),
+            (key) => ({ key, value: productDetails[key] }),
+        );
+
+        const newProduct: ProductDocument = await this._ProductModel.create(productPayload);
+        return new SuccessDto('Create product successfully', HttpStatus.CREATED, newProduct);
     }
 }

@@ -16,7 +16,7 @@ export class Product {
     @Prop({ required: true, name: 'product_name' })
     name: string;
 
-    @Prop({ required: true, name: 'product_thumbnail' })
+    @Prop({ name: 'product_thumbnail' })
     thumbnail: string;
 
     @Prop({ name: 'product_description' })
@@ -60,6 +60,7 @@ const schema = SchemaFactory.createForClass(Product);
 
 schema.pre('save', function (next) {
     this.slug = UtilHelper.slugify(this.name);
+    this.thumbnail = `https://${this.slug}.png`;
     next();
 });
 
