@@ -13,6 +13,5 @@ import { APIKey, APIKeySchema } from '@schemas/api-key.schema';
             },
         ]),
     ],
-    exports: [ApiKeyService],
 })
 export class ApiKeyModule {}

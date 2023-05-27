@@ -3,7 +3,6 @@ import { AccountDto } from '@dto/account.dto';
 import { BcryptHelper } from '@helpers/bcrypt.helper';
 import { UserDocument } from '@schemas/user.schema';
 import { ErrorDto, SuccessDto } from '@dto/core';
-import { MailerService } from '@modules/mailer/mailer.service';
 import { TokenDocument } from '@schemas/token.schema';
 import * as _ from 'lodash';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
@@ -21,7 +20,7 @@ import { ExtractTokenCommand } from '@modules/token/commands/extract-token.comma
 
 @Injectable()
 export class AuthService {
-    constructor(private _CommandBus: CommandBus, private _MailerService: MailerService) {}
+    constructor(private _CommandBus: CommandBus) {}
 
     async createAccount(account: AccountDto): Promise<SuccessDto> {
         const existAccount: UserDocument = await this.findUserByEmail(account.email);

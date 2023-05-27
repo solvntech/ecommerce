@@ -12,6 +12,5 @@ import { InitMailer } from '@modules/mailer/init-mailer';
             useClass: InitMailer,
         }),
     ],
-    exports: [MailerService],
 })
 export class MailerModule {}
