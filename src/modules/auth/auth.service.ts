@@ -3,29 +3,31 @@ import { AccountDto } from '@dto/account.dto';
 import { BcryptHelper } from '@helpers/bcrypt.helper';
 import { UserDocument } from '@schemas/user.schema';
 import { ErrorDto, SuccessDto } from '@dto/core';
-import { UserService } from '@modules/user/user.service';
 import { TokenService } from '@modules/token/token.service';
 import { JwtPayload, PairSecretToken } from '@types';
 import { MailerService } from '@modules/mailer/mailer.service';
 import { TokenDocument } from '@schemas/token.schema';
 import * as _ from 'lodash';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateUserCommand, FindUserByCommand } from '@modules/user/commands';
 
 @Injectable()
 export class AuthService {
     constructor(
-        private _UserService: UserService,
+        private _CommandBus: CommandBus,
         private _TokenService: TokenService,
         private _MailerService: MailerService,
     ) {}
 
     async createAccount(account: AccountDto): Promise<SuccessDto> {
-        const existAccount: UserDocument = await this._UserService.findUserByEmail(account.email);
+        const existAccount: UserDocument = await this.findUserByEmail(account.email);
+
         if (existAccount) {
             throw new ErrorDto('Duplicate account', HttpStatus.CONFLICT);
         }
         account.password = await BcryptHelper.hashPassword(account.password);
-        const user: UserDocument = await this._UserService.create(account);
+        const user: UserDocument = await this._CommandBus.execute(new CreateUserCommand(account));
 
         const payload: JwtPayload = {
             id: user._id.toString(),
@@ -46,7 +48,7 @@ export class AuthService {
     }
 
     async validateUser(email: string, password: string): Promise<SuccessDto> {
-        const currentAccount: UserDocument = await this._UserService.findUserByEmail(email);
+        const currentAccount: UserDocument = await this.findUserByEmail(email);
         if (currentAccount) {
             if (await BcryptHelper.validatePassword(password, currentAccount.password)) {
                 const payload: JwtPayload = {
@@ -68,6 +70,10 @@ export class AuthService {
             }
         }
         throw new ErrorDto('Email or password is incorrect', HttpStatus.BAD_REQUEST);
+    }
+
+    private async findUserByEmail(email: string): Promise<UserDocument> {
+        return this._CommandBus.execute(new FindUserByCommand({ email }));
     }
 
     async logout(refreshToken: string): Promise<SuccessDto> {

@@ -4,9 +4,12 @@ import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '@schemas/user.schema';
 import { TokenModule } from '@modules/token/token.module';
+import { CreateUserHandler, FindUserByHandler } from '@modules/user/commands';
+
+const handler = [CreateUserHandler, FindUserByHandler];
 
 @Module({
-    providers: [UserService],
+    providers: [UserService, ...handler],
     controllers: [UserController],
     imports: [
         MongooseModule.forFeature([
@@ -17,6 +20,5 @@ import { TokenModule } from '@modules/token/token.module';
         ]),
         TokenModule,
     ],
-    exports: [UserService],
 })
 export class UserModule {}

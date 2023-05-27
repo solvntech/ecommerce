@@ -8,6 +8,7 @@ import { UserDto } from '@dto/user.dto';
 import { AccountDto } from '@dto/account.dto';
 import * as mongoose from 'mongoose';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
+import { FilterUserType } from '@modules/user/types';
 
 @Injectable()
 export class UserService {
@@ -18,8 +19,8 @@ export class UserService {
         return new SuccessDto(null, HttpStatus.OK, plainToClass(UserDto, users));
     }
 
-    async findUserByEmail(email: string): Promise<UserDocument> {
-        return this._UserModel.findOne({ email: email }).lean();
+    async findUserBy(query: FilterUserType): Promise<UserDocument> {
+        return this._UserModel.findOne(query).lean();
     }
 
     async findUserById(id: string): Promise<UserDocument> {

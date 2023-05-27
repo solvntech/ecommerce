@@ -3,10 +3,10 @@ import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 import { MongooseModule, getConnectionToken } from '@nestjs/mongoose';
 import { Product, ProductSchema } from '@schemas/product';
-import { UserModule } from '@modules/user/user.module';
 import { TokenModule } from '@modules/token/token.module';
 import { ProductDetailsService } from '@modules/product/product-details.service';
 import { PRODUCT_MODELS, ProductModelRegistry } from '@modules/product/product-model-registry';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
     providers: [
@@ -20,7 +20,7 @@ import { PRODUCT_MODELS, ProductModelRegistry } from '@modules/product/product-m
     ],
     controllers: [ProductController],
     imports: [
-        UserModule,
+        CqrsModule,
         TokenModule,
         MongooseModule.forFeature([
             {

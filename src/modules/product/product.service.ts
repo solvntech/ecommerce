@@ -5,16 +5,17 @@ import { Model } from 'mongoose';
 import { ProductDto, ProductResDto } from '@dto/product';
 import { plainToClass } from 'class-transformer';
 import { ErrorDto, SuccessDto } from '@dto/core';
-import { UserService } from '@modules/user/user.service';
 import { UserDocument } from '@schemas/user.schema';
 import { ProductDetailsService } from '@modules/product/product-details.service';
 import * as _ from 'lodash';
+import { CommandBus } from '@nestjs/cqrs';
+import { FindUserByCommand } from '@modules/user/commands';
 
 @Injectable()
 export class ProductService {
     constructor(
         @InjectModel(Product.name) private _ProductModel: Model<Product>,
-        private _UserService: UserService,
+        private _CommandBus: CommandBus,
         private _ProductDetailsService: ProductDetailsService,
     ) {}
 
@@ -25,7 +26,7 @@ export class ProductService {
 
     async createProduct(product: ProductDto): Promise<SuccessDto> {
         const productDetails = await this._ProductDetailsService.create(product.attributes);
-        const shop: UserDocument = await this._UserService.findUserById(product.shop);
+        const shop: UserDocument = await this._CommandBus.execute(new FindUserByCommand({ id: product.shop }));
 
         if (!shop) {
             throw new ErrorDto('Shop is incorrect', HttpStatus.NOT_FOUND);
