@@ -3,7 +3,6 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '@schemas/user.schema';
-import { TokenModule } from '@modules/token/token.module';
 import { CreateUserHandler, FindUserByHandler } from '@modules/user/commands';
 
 const handler = [CreateUserHandler, FindUserByHandler];
@@ -18,7 +17,6 @@ const handler = [CreateUserHandler, FindUserByHandler];
                 schema: UserSchema,
             },
         ]),
-        TokenModule,
     ],
 })
 export class UserModule {}

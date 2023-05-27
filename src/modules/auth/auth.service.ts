@@ -3,22 +3,25 @@ import { AccountDto } from '@dto/account.dto';
 import { BcryptHelper } from '@helpers/bcrypt.helper';
 import { UserDocument } from '@schemas/user.schema';
 import { ErrorDto, SuccessDto } from '@dto/core';
-import { TokenService } from '@modules/token/token.service';
-import { JwtPayload, PairSecretToken } from '@types';
 import { MailerService } from '@modules/mailer/mailer.service';
 import { TokenDocument } from '@schemas/token.schema';
 import * as _ from 'lodash';
 import { LoggerServerHelper } from '@helpers/logger-server.helper';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand, FindUserByCommand } from '@modules/user/commands';
+import { JwtPayload, PairSecretToken, PairSecretTokenType, RemoveTokenByType } from '@modules/token/types';
+import {
+    FindTokenCommand,
+    GenerateTokenCommand,
+    ProvideNewTokenCommand,
+    RemoveTokenCommand,
+    VerifyTokenCommand,
+} from '@modules/token/commands';
+import { ExtractTokenCommand } from '@modules/token/commands/extract-token.command';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private _CommandBus: CommandBus,
-        private _TokenService: TokenService,
-        private _MailerService: MailerService,
-    ) {}
+    constructor(private _CommandBus: CommandBus, private _MailerService: MailerService) {}
 
     async createAccount(account: AccountDto): Promise<SuccessDto> {
         const existAccount: UserDocument = await this.findUserByEmail(account.email);
@@ -36,7 +39,7 @@ export class AuthService {
         };
 
         // create jwt token
-        const tokenObj: PairSecretToken = await this._TokenService.generateToken(payload);
+        const tokenObj: PairSecretToken = await this.generateToken(payload);
 
         if (tokenObj) {
             return new SuccessDto('Create account successfully', HttpStatus.CREATED, {
@@ -58,7 +61,7 @@ export class AuthService {
                 };
 
                 // create jwt token
-                const tokenObj: PairSecretToken = await this._TokenService.generateToken(payload);
+                const tokenObj: PairSecretToken = await this.generateToken(payload);
 
                 if (tokenObj) {
                     return new SuccessDto('Login successfully', HttpStatus.OK, {
@@ -77,7 +80,7 @@ export class AuthService {
     }
 
     async logout(refreshToken: string): Promise<SuccessDto> {
-        const isSuccess: boolean = await this._TokenService.removeToken('refreshToken', refreshToken);
+        const isSuccess: boolean = await this.removeToken('refreshToken', refreshToken);
         if (isSuccess) {
             return new SuccessDto('Logout successfully');
         }
@@ -85,13 +88,13 @@ export class AuthService {
     }
 
     async handleRefreshToken(refreshToken: string): Promise<SuccessDto> {
-        const userPayload: JwtPayload = this._TokenService.extractToken(refreshToken);
+        const userPayload: JwtPayload = await this.extractToken(refreshToken);
 
         if (!userPayload) {
             throw new ErrorDto('Invalid Token', HttpStatus.BAD_REQUEST);
         }
 
-        const token: TokenDocument = await this._TokenService.findToken(userPayload.id);
+        const token: TokenDocument = await this.findToken(userPayload.id);
 
         if (!token) {
             throw new ErrorDto('Invalid Token', HttpStatus.BAD_REQUEST);
@@ -99,7 +102,7 @@ export class AuthService {
 
         if (_.includes(token.refreshTokenUsed, refreshToken)) {
             // remove token
-            await this._TokenService.removeToken('user', userPayload.id);
+            await this.removeToken('user', userPayload.id);
             throw new ErrorDto('Account was stolen', HttpStatus.FORBIDDEN);
         }
 
@@ -108,8 +111,8 @@ export class AuthService {
         }
 
         try {
-            await this._TokenService.verifyToken(refreshToken, token.publicKey);
-            const tokenObj: PairSecretToken = await this._TokenService.provideNewToken(
+            await this.verifyToken(refreshToken, token.publicKey);
+            const tokenObj: PairSecretToken = await this.provideNewToken(
                 {
                     id: userPayload.id,
                     email: userPayload.email,
@@ -121,8 +124,32 @@ export class AuthService {
         } catch (e) {
             LoggerServerHelper.error(e.toString());
             // remove token
-            await this._TokenService.removeToken('user', userPayload.id);
+            await this.removeToken('user', userPayload.id);
             throw new ErrorDto('Token is expired', HttpStatus.FORBIDDEN);
         }
+    }
+
+    private async generateToken(payload: JwtPayload): Promise<PairSecretTokenType> {
+        return this._CommandBus.execute(new GenerateTokenCommand(payload));
+    }
+
+    private async removeToken(by: RemoveTokenByType, value: string): Promise<boolean> {
+        return this._CommandBus.execute(new RemoveTokenCommand(by, value));
+    }
+
+    private async findToken(userId: string): Promise<TokenDocument> {
+        return this._CommandBus.execute(new FindTokenCommand(userId));
+    }
+
+    private async provideNewToken(payload: JwtPayload, oldRefreshToken: string): Promise<PairSecretToken> {
+        return this._CommandBus.execute(new ProvideNewTokenCommand(payload, oldRefreshToken));
+    }
+
+    private async extractToken(token: string): Promise<JwtPayload> {
+        return this._CommandBus.execute(new ExtractTokenCommand(token));
+    }
+
+    private async verifyToken(token: string, secretKey: string): Promise<JwtPayload> {
+        return this._CommandBus.execute(new VerifyTokenCommand(token, secretKey));
     }
 }

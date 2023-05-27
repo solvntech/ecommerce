@@ -4,9 +4,26 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Token, TokenSchema } from '@schemas/token.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from '@modules/token/strategies/jwt.strategy';
+import {
+    ExtractTokenHandler,
+    FindTokenHandler,
+    GenerateTokenHandler,
+    ProvideNewTokenHandler,
+    RemoveTokenHandler,
+    VerifyTokenHandler,
+} from '@modules/token/commands';
+
+const handlers = [
+    GenerateTokenHandler,
+    RemoveTokenHandler,
+    ExtractTokenHandler,
+    FindTokenHandler,
+    ProvideNewTokenHandler,
+    VerifyTokenHandler,
+];
 
 @Module({
-    providers: [TokenService, JwtStrategy],
+    providers: [...handlers, TokenService, JwtStrategy],
     imports: [
         MongooseModule.forFeature([
             {
@@ -16,6 +33,5 @@ import { JwtStrategy } from '@modules/token/strategies/jwt.strategy';
         ]),
         JwtModule.register({}),
     ],
-    exports: [TokenService],
 })
 export class TokenModule {}

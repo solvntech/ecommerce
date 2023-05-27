@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@nestjs/core';
 import { AuthModule } from '@modules/auth/auth.module';
 import { UserModule } from '@modules/user/user.module';
 import { ProductModule } from '@modules/product/product.module';
+import { TokenModule } from '@modules/token/token.module';
 
 const routes: Routes = [
     {
@@ -25,6 +26,6 @@ const routes: Routes = [
 ];
 
 @Module({
-    imports: [AuthModule, UserModule, ProductModule, RouterModule.register(routes)],
+    imports: [AuthModule, UserModule, ProductModule, TokenModule, RouterModule.register(routes)],
 })
 export class AppRoutingModule {}

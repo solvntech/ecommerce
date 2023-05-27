@@ -12,3 +12,5 @@ export type TToken = PairKey & {
     user: string;
     refreshToken: string;
 };
+
+export type PairSecretTokenType = PairSecretToken | null;

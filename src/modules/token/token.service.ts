@@ -3,16 +3,23 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Token, TokenDocument } from '@schemas/token.schema';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
-import { JwtPayload, PairKey, PairSecretToken, TToken } from '@types';
 import { JwtService } from '@nestjs/jwt';
 import { TokenExpires } from '@constants';
 import * as mongoose from 'mongoose';
+import {
+    JwtPayload,
+    PairKey,
+    PairSecretToken,
+    PairSecretTokenType,
+    RemoveTokenByType,
+    TToken,
+} from '@modules/token/types';
 
 @Injectable()
 export class TokenService {
     constructor(@InjectModel(Token.name) private _TokenModel: Model<Token>, private _JwtService: JwtService) {}
 
-    async generateToken(payload: JwtPayload): Promise<PairSecretToken | null> {
+    async generateToken(payload: JwtPayload): Promise<PairSecretTokenType> {
         // find secret pair key
         const token: TokenDocument = await this._TokenModel.findOne({ user: payload.id }).lean();
 
@@ -67,7 +74,7 @@ export class TokenService {
             .lean();
     }
 
-    async removeToken(by: 'user' | 'refreshToken', value: string): Promise<boolean> {
+    async removeToken(by: RemoveTokenByType, value: string): Promise<boolean> {
         const tokenData: TokenDocument = await this._TokenModel.findOneAndRemove({ [by]: value }).lean();
 
         return !!tokenData;

@@ -3,7 +3,6 @@ import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 import { MongooseModule, getConnectionToken } from '@nestjs/mongoose';
 import { Product, ProductSchema } from '@schemas/product';
-import { TokenModule } from '@modules/token/token.module';
 import { ProductDetailsService } from '@modules/product/product-details.service';
 import { PRODUCT_MODELS, ProductModelRegistry } from '@modules/product/product-model-registry';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -21,7 +20,6 @@ import { CqrsModule } from '@nestjs/cqrs';
     controllers: [ProductController],
     imports: [
         CqrsModule,
-        TokenModule,
         MongooseModule.forFeature([
             {
                 name: Product.name,
